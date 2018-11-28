@@ -33,6 +33,10 @@ class Tree
      */
     protected $icon = ['│', '├', '└'];
 
+    /**
+     * 分隔符
+     * @var string
+     */
     protected $nbsp = "&nbsp;";
 
     /**
@@ -71,7 +75,7 @@ class Tree
      */
     public function icon($icons)
     {
-        $this->icon = array_merge($this->icon, $icons);
+        $this->icon = $icons;
         return $this;
     }
 
@@ -87,10 +91,49 @@ class Tree
     }
 
     /**
+     * 获取处理后的结果
+     * @return array
+     */
+    public function result()
+    {
+        return $this->ret;
+    }
+
+    /**
+     * 获取处理结果指定的字段集合
+     * @param string $field
+     * @param null $k 哪个字段作为键名
+     * @return array
+     */
+    public function resultValue($field, $k = null)
+    {
+        $ref = [];
+        foreach ($this->ret as $id => $rs) {
+            if ($k && isset($rs[$k])) {
+                $key = $rs[$k];
+            } else {
+                $key = $id;
+            }
+            $ref[$key] = isset($rs[$field]) ? $rs[$field] : null;
+        }
+        return $ref;
+    }
+
+    /**
+     * 重置结果
+     * @return $this
+     */
+    public function resultReset()
+    {
+        $this->ret = [];
+        return $this;
+    }
+
+    /**
      * 得到树型结构（单条）
      * @param int $myid 指定层级ID，默认从0开始
      * @param string $adds
-     * @return array
+     * @return $this
      */
     public function getTreeOne($myid = 0, $adds = '')
     {
@@ -98,54 +141,51 @@ class Tree
         $number = 1;
         //获取指定层级下的数据
         $child = $this->getChild($myid);
-        if (empty($child)) {
-            return $this->ret;
-        }
-        //获取总数量
-        $total = count($child);
-        //遍历数据
-        foreach ($child as $id => $data) {
-            $j = $k = '';
-            //当前循环次数=总数时代表最后一个
-            if ($number == $total) {
-                $j .= $this->icon[2];
-            } else {
-                $j .= $this->icon[1];
-                //不想等是附加标识符
-                $k = $adds ? $this->icon[0] : '';
+        if (!empty($child) && is_array($child)) {
+            //获取总数量
+            $total = count($child);
+            //遍历数据
+            foreach ($child as $id => $data) {
+                $j = $k = '';
+                //当前循环次数=总数时代表最后一个
+                if ($number == $total) {
+                    $j .= $this->icon[2];
+                } else {
+                    $j .= $this->icon[1];
+                    //不想等是附加标识符
+                    $k = $adds ? $this->icon[0] : '';
+                }
+                //修饰符
+                $spacer = $adds ? ($adds . $j) : '';
+
+                $data['spacer_name'] = $spacer . $data['name'];
+                $this->ret[] = $data;
+
+                $nbsp = $this->nbsp;
+                $this->getTreeOne($id, $adds . $k . $nbsp);
+                $number++;
             }
-            //修饰符
-            $spacer = $adds ? ($adds . $j) : '';
-
-            $data['spacer_name'] = $spacer . $data['name'];
-            $this->ret[] = $data;
-
-            $nbsp = $this->nbsp;
-            $this->getTreeOne($id, $adds . $k . $nbsp);
-            $number++;
         }
-        return $this->ret;
+        return $this;
     }
 
     /**
      * 得到树型结构数组
      * @param int $myid
-     * @return array
+     * @return $this
      */
     public function getTreeArray($myid)
     {
-        $ref = [];
         //获取指定层级下的数据
         $child = $this->getChild($myid);
-        if (empty($child)) {
-            return [];
+        if (!empty($child) && is_array($child)) {
+            foreach ($child as $id => $data) {
+                $this->ret[$id] = $data;
+                //继续下级
+                $this->ret[$id]['child'] = $this->getTreeArray($id);
+            }
         }
-        foreach ($child as $id => $data) {
-            $ref[$id] = $data;
-            //继续下级
-            $ref[$id]['child'] = $this->getTreeArray($id);
-        }
-        return $ref;
+        return $this;
     }
 
     /**
