@@ -1,0 +1,23 @@
+{
+  "name": "shuipf/tree",
+  "description": "PHP数组转换成树形结构处理",
+  "keywords": [
+    "Tree"
+  ],
+  "homepage": "http://github.com/shuipf/tree",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "shuipf",
+      "email": "admin@abc3210.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.9"
+  },
+  "autoload": {
+    "psr-4": {
+      "shuipf\\tree\\": "./src"
+    }
+  }
+}
