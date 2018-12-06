@@ -45,6 +45,18 @@ class Tree
      */
     protected $ret = [];
 
+    /**
+     * 父节点字段名
+     * @var string
+     */
+    protected $pField = 'parentid';
+
+    /**
+     * 下级节点字段名
+     * @var string
+     */
+    protected $uField = 'child';
+
 
     /**
      * 构造函数
@@ -87,6 +99,28 @@ class Tree
     public function nbsp($nbsp)
     {
         $this->nbsp = $nbsp;
+        return $this;
+    }
+
+    /**
+     * 设置父节点字段名
+     * @param string $field
+     * @return $this
+     */
+    public function pfield($field)
+    {
+        $this->pField = $field;
+        return $this;
+    }
+
+    /**
+     * 设置下级节点字段名
+     * @param string $field
+     * @return $this
+     */
+    public function ufield($field)
+    {
+        $this->uField = $field;
         return $this;
     }
 
@@ -157,10 +191,8 @@ class Tree
                 }
                 //修饰符
                 $spacer = $adds ? ($adds . $j) : '';
-
                 $data['spacer_name'] = $spacer . $data['name'];
                 $this->ret[] = $data;
-
                 $nbsp = $this->nbsp;
                 $this->getTreeOne($id, $adds . $k . $nbsp);
                 $number++;
@@ -172,20 +204,22 @@ class Tree
     /**
      * 得到树型结构数组
      * @param int $myid
-     * @return $this
+     * @return array
      */
     public function getTreeArray($myid)
     {
+        $this->resultReset();
+        $ret = [];
         //获取指定层级下的数据
         $child = $this->getChild($myid);
         if (!empty($child) && is_array($child)) {
             foreach ($child as $id => $data) {
-                $this->ret[$id] = $data;
+                $ret[$id] = $data;
                 //继续下级
-                $this->ret[$id]['child'] = $this->getTreeArray($id);
+                $ret[$id]['child'] = $this->getTreeArray($id);
             }
         }
-        return $this;
+        return $ret;
     }
 
     /**
@@ -200,7 +234,10 @@ class Tree
             return [];
         }
         foreach ($this->data as $id => $a) {
-            if ($a['parentid'] == $myid) {
+            if (empty($this->pField) || !isset($a[$this->pField])) {
+                continue;
+            }
+            if ($a[$this->pField] == $myid) {
                 $ref[$id] = $a;
             }
         }
