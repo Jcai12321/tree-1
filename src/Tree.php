@@ -206,7 +206,7 @@ class Tree
      * @param int $myid
      * @return array
      */
-    public function getTreeArray($myid)
+    public function getTreeArray($myid = 0)
     {
         $this->resultReset();
         $ret = [];
@@ -216,7 +216,7 @@ class Tree
             foreach ($child as $id => $data) {
                 $ret[$id] = $data;
                 //继续下级
-                $ret[$id]['child'] = $this->getTreeArray($id);
+                $ret[$id][$this->uField] = $this->getTreeArray($id);
             }
         }
         return $ret;
