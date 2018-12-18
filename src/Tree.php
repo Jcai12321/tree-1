@@ -31,7 +31,7 @@ class Tree
      * 生成树型结构所需修饰符号，可以换成图片
      * @var array
      */
-    protected $icon = ['│', '├', '└'];
+    protected $icon = ['&emsp;│', '&emsp;├', '&emsp;└'];
 
     /**
      * 分隔符
@@ -56,6 +56,18 @@ class Tree
      * @var string
      */
     protected $uField = 'child';
+
+    /**
+     * 名称字段名
+     * @var string
+     */
+    protected $nField = 'name';
+
+    /**
+     * 加上间隔符后的字段名
+     * @var string
+     */
+    protected $sField = 'spacer_name';
 
 
     /**
@@ -125,6 +137,28 @@ class Tree
     }
 
     /**
+     * 设置名称字段名
+     * @param string $field
+     * @return $this
+     */
+    public function nfield($field)
+    {
+        $this->nField = $field;
+        return $this;
+    }
+
+    /**
+     * 设置间隔字段名
+     * @param string $field
+     * @return $this
+     */
+    public function sfield($field)
+    {
+        $this->sField = $field;
+        return $this;
+    }
+
+    /**
      * 获取处理后的结果
      * @return array
      */
@@ -180,6 +214,10 @@ class Tree
             $total = count($child);
             //遍历数据
             foreach ($child as $id => $data) {
+                //检查是否有对应名称字段数据
+                if (!isset($data[$this->nField])) {
+                    continue;
+                }
                 $j = $k = '';
                 //当前循环次数=总数时代表最后一个
                 if ($number == $total) {
@@ -191,7 +229,7 @@ class Tree
                 }
                 //修饰符
                 $spacer = $adds ? ($adds . $j) : '';
-                $data['spacer_name'] = $spacer . $data['name'];
+                $data[$this->sField] = $spacer . $data[$this->nField];
                 $this->ret[] = $data;
                 $nbsp = $this->nbsp;
                 $this->getTreeOne($id, $adds . $k . $nbsp);
